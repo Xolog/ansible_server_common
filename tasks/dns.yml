@@ -1,26 +1,36 @@
+---
 - name: Stop service systemd-resolved
-  become: yes
+  become: true
   ansible.builtin.service:
     name: systemd-resolved
     state: stopped
 
 - name: Disable service systemd-resolved
-  become: yes
+  become: true
   ansible.builtin.service:
     name: systemd-resolved
     enabled: no
 
 - name: Remove symbol link resolv.conf
-  become: yes
+  become: true
   ansible.builtin.file:
     path: /etc/resolv.conf
     state: absent
 
 - name: resolv.conf | Ensure dns configuration
-  become: yes
+  become: true
   template:
     src: resolv.j2
     dest: "/etc/resolv.conf"
     owner: root
     group: root
     mode: 0644
+
+- name: Add hosts entries to /etc/hosts
+  become: true
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ item.addr }} {{ item.domain }}"
+    state: present
+  loop: "{{ etc_hosts }}"
+  when: etc_hosts | length > 0
